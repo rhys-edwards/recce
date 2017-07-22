@@ -18,9 +18,12 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
     @IBOutlet weak var locationLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     
+    
+    let UIImagePickerControllerImageURL: String = ""
+    let UIImagePickerControllerPHAsset: String = ""
+    
     // Get the longitude and latitude
     let manager = CLLocationManager()
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[0]
         let span:MKCoordinateSpan = MKCoordinateSpanMake(0.01, 0.01)
@@ -28,7 +31,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         
         // THIS WORKS!
         // Work out how to append this to photo exif, or in a DB with a UID for the photo
-        print(myLocation.latitude)
+        //print(myLocation.latitude)
         
         let region:MKCoordinateRegion = MKCoordinateRegionMake(myLocation, span)
         map.setRegion(region, animated: true)
@@ -39,20 +42,43 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
     // Let a user pick an image (can only select from library)
     @IBAction func importImage(_ sender: Any) {
         let image = UIImagePickerController()
+
         image.delegate = self
         
         // Display from library
-        image.sourceType = UIImagePickerControllerSourceType.photoLibrary
-        
+        image.sourceType = UIImagePickerControllerSourceType.camera
+
         image.allowsEditing = false
         
         self.present(image, animated: true) {
-            // After it is complete
+            print("hello me")
         }
     }
     
-    // GITHUB 
+    // SAVE IMAGE TO PHOTO LIBRARY
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        
+        let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+        
+        func addAsset(image: UIImage, location: CLLocation? = nil) {
+            PHPhotoLibrary.shared().performChanges({
+                // Request creating an asset from the image.
+                let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
+                // Set metadata location
+                if let location = location {
+                    creationRequest.location = location
+                }
+            }, completionHandler: { success, error in
+                if !success { NSLog("error creating asset: \(String(describing: error))") }
+            })
+        }
+        
+        addAsset(image: image, location: manager.location)
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+        print(manager.location!)
+        print(info[UIImagePickerControllerMediaMetadata]!)
+
+        
         var chosenImage:UIImage?
         var location = "Not known"
         var timeTaken = "Not known"
@@ -100,21 +126,19 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
             }
         }
     }
-
     
-    
-//    // Display a photo in a view (currently displays from library)
-//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: NSDictionary!) {
-//        let metadata = info[UIImagePickerControllerReferenceURL]!
-//        print(metadata)
-//        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-//            myImageView.image = image
-//        } else {
-//            // Error message
-//        }
-//        
-//        self.dismiss(animated: true, completion: nil)
-//    }
+    func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            // we got back an error!
+            let ac = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+        } else {
+            let ac = UIAlertController(title: "Saved!", message: "Your altered image has been saved to your photos.", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

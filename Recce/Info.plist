@@ -28,6 +28,12 @@
 	<string>We use your image</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We get your location to make your job easier</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We use your photos</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>We use your photos</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
