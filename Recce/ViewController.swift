@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import Photos
+import CoreLocation
 
 class ViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate, CLLocationManagerDelegate {
 
@@ -57,27 +58,38 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         let image = info[UIImagePickerControllerOriginalImage] as! UIImage
         
         func addAsset(image: UIImage, location: CLLocation? = nil) {
-            print("hi")
             PHPhotoLibrary.shared().performChanges({
                 // Request creating an asset from the image.
                 let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
+                let asset: AnyObject? = nil
                 // Set metadata location
                 if let location = location {
-                    print(location)
                     creationRequest.location = location
                     
                 }
             }, completionHandler: { success, error in
-                if !success { NSLog("error creating asset: \(String(describing: error))") }
+                if !success {
+                    NSLog("error creating asset: \(String(describing: error))")
+                } else {
+                    //print(info[UIImagePickerControllerMediaMetadata]!)
+//                    var long:Double = location!.coordinate.longitude
+//                    var lat:Double = location!.coordinate.latitude
+//                    //var location = long + " " + lat
+//                    let location = "\(long) + \(lat)"
+//                    var locationDisplay = "\(location)"
+//                    
+//                    return locationDisplay
+                    }
             })
         }
         
         addAsset(image: image, location: manager.location)
-                
+        
+        
         var chosenImage:UIImage?
         var location = "Not known"
         var timeTaken = "Not known"
-        
+        print(UIImagePickerControllerImageURL)
         if let URL = info[UIImagePickerControllerImageURL] as? URL {
             print("We got the URL as \(URL)")
             let opts = PHFetchOptions()
@@ -116,25 +128,25 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         dismiss(animated: true) {
             DispatchQueue.main.async {
                 self.myImageView.image = chosenImage
-                self.locationLabel.text = location
+                self.locationLabel.text = locationDisplay
                 self.timeLabel.text = timeTaken
             }
         }
-        print(info[UIImagePickerControllerMediaMetadata]!)
     }
+
     
-    func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
-        if let error = error {
-            // we got back an error!
-            let ac = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
-            present(ac, animated: true)
-        } else {
-            let ac = UIAlertController(title: "Saved!", message: "Your altered image has been saved to your photos.", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
-            present(ac, animated: true)
-        }
-    }
+//    func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+//        if let error = error {
+//            // we got back an error!
+//            let ac = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
+//            ac.addAction(UIAlertAction(title: "OK", style: .default))
+//            present(ac, animated: true)
+//        } else {
+//            let ac = UIAlertController(title: "Saved!", message: "Your altered image has been saved to your photos.", preferredStyle: .alert)
+//            ac.addAction(UIAlertAction(title: "OK", style: .default))
+//            present(ac, animated: true)
+//        }
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
