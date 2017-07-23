@@ -42,18 +42,14 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
     // Let a user pick an image (can only select from library)
     @IBAction func importImage(_ sender: Any) {
         let image = UIImagePickerController()
-
         image.delegate = self
         
         // Display from library
         image.sourceType = UIImagePickerControllerSourceType.camera
-
         image.allowsEditing = false
-        
-        self.present(image, animated: true) {
-            print("hello me")
-        }
+        self.present(image, animated: true)
     }
+    
     
     // SAVE IMAGE TO PHOTO LIBRARY
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
@@ -61,12 +57,15 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         let image = info[UIImagePickerControllerOriginalImage] as! UIImage
         
         func addAsset(image: UIImage, location: CLLocation? = nil) {
+            print("hi")
             PHPhotoLibrary.shared().performChanges({
                 // Request creating an asset from the image.
                 let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
                 // Set metadata location
                 if let location = location {
+                    print(location)
                     creationRequest.location = location
+                    
                 }
             }, completionHandler: { success, error in
                 if !success { NSLog("error creating asset: \(String(describing: error))") }
@@ -74,16 +73,12 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         }
         
         addAsset(image: image, location: manager.location)
-        UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
-        print(manager.location!)
-        print(info[UIImagePickerControllerMediaMetadata]!)
-
-        
+                
         var chosenImage:UIImage?
         var location = "Not known"
         var timeTaken = "Not known"
         
-        if let URL = info[UIImagePickerControllerReferenceURL] as? URL {
+        if let URL = info[UIImagePickerControllerImageURL] as? URL {
             print("We got the URL as \(URL)")
             let opts = PHFetchOptions()
             opts.fetchLimit = 1
@@ -125,6 +120,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
                 self.timeLabel.text = timeTaken
             }
         }
+        print(info[UIImagePickerControllerMediaMetadata]!)
     }
     
     func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
